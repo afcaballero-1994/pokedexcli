@@ -1,6 +1,14 @@
 package main
 
+import (
+    "time"
+    "github.com/afcaballero-1994/pokedexcli/internal/pokeapi"
+)
 
 func main() {
-	startRepl()
+    pclient := pokeapi.NewClient(2 * time.Second)
+    c := config {
+        pokeapiClient: pclient,
+    }
+    startRepl(&c)
 }

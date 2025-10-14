@@ -1,42 +1,58 @@
 package pokeapi
 
 import (
-	"net/http"
-	"encoding/json"
-	"fmt"
-	"io"
+    "net/http"
+    "encoding/json"
+    "fmt"
+    "io"
+    "time"
 )
 
 const baseurl string = "https://pokeapi.co/api/v2"
 
+type Client struct {
+    client http.Client
+}
 
-func GetResources(pageURL *string) (mapResponse, error) {
-	url := baseurl + "/location-area"
-	if pageURL != nil {
-		url = *pageURL
-	}
-	res, err := http.Get(url)
-	var areas mapResponse
-	if err != nil {
-		fmt.Println(err)
-		return areas, err
-	}
+func NewClient(timeout time.Duration) Client{
+    return Client {client: http.Client{
+        Timeout: timeout,
+        },
+    }
+}
 
-	body, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
+func (c *Client) GetResources(pageURL *string) (ShallowMapResponse, error) {
+    url := baseurl + "/location-area"
+    if pageURL != nil {
+        url = *pageURL
+    }
+    req, err := http.NewRequest("GET", url, nil)
 
-	if res.StatusCode > 299 {
-		fmt.Println(res.StatusCode, body)
-	}
+    if err != nil {
+        fmt.Println(err)
+        return ShallowMapResponse{}, err
+    }
 
-	if err != nil {
-		return areas, err
-	}
-	
-	
-	if err = json.Unmarshal(body, &areas); err != nil {
-		return areas, err
-	}
-	
-	return areas, nil
+    res, err := c.client.Do(req)
+    if err != nil {
+        return ShallowMapResponse{}, err
+    }
+
+    data, err := io.ReadAll(res.Body)
+    defer res.Body.Close()
+
+    if res.StatusCode > 299 {
+        fmt.Printf("received response with status: %d", res.StatusCode)
+    }
+
+    if err != nil {
+        return ShallowMapResponse{}, err
+    }
+
+    var areas ShallowMapResponse = ShallowMapResponse{}
+    if err = json.Unmarshal(data, &areas); err != nil {
+        return areas, err
+    }
+
+    return areas, nil
 }

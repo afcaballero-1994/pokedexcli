@@ -1,3 +1,3 @@
 module github.com/afcaballero-1994/pokedexcli
 
-go 1.25.2
+go 1.25.1
