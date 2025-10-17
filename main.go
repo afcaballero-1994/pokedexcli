@@ -9,6 +9,7 @@ func main() {
     pclient := pokeapi.NewClient(2 * time.Second)
     c := config {
         pokeapiClient: pclient,
+        caughtPokemon: map[string]pokeapi.Pokemon{},
     }
     startRepl(&c)
 }

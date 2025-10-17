@@ -1,9 +1,8 @@
 package pokecache
 
 import (
-	"sync"
+    "sync"
     "time"
-    "fmt"
 )
 
 type cacheEntry struct {
@@ -31,7 +30,6 @@ func (c *Cache)Add(key string, val []byte) {
     c.mu.Lock()
     defer c.mu.Unlock()
 
-    fmt.Println("Adding Entry:", key)
     c.entry[key] = cacheEntry{createdAt: time.Now(), val: val,}
 }
 
@@ -39,7 +37,6 @@ func (c *Cache)Get(key string) ([]byte, bool) {
     c.mu.Lock()
     defer c.mu.Unlock()
 
-    fmt.Println("Getting url:", key)
     data, exist := c.entry[key]
     return data.val, exist
 }

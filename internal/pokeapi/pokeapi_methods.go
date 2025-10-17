@@ -23,7 +23,7 @@ func NewClient(timeout time.Duration) Client{
     }
 }
 
-func (c *Client) GetResources(pageURL *string) (ShallowMapResponse, error) {
+func (c *Client) GetLocations(pageURL *string) (ShallowMapResponse, error) {
     url := baseurl + "/location-area"
     if pageURL != nil {
         url = *pageURL
@@ -45,10 +45,6 @@ func (c *Client) GetResources(pageURL *string) (ShallowMapResponse, error) {
         data, err = io.ReadAll(res.Body)
         defer res.Body.Close()
 
-        if res.StatusCode > 299 {
-            fmt.Printf("received response with status: %d", res.StatusCode)
-        }
-
         if err != nil {
             return ShallowMapResponse{}, err
         }
@@ -62,4 +58,74 @@ func (c *Client) GetResources(pageURL *string) (ShallowMapResponse, error) {
     }
 
     return areas, nil
+}
+
+func (c *Client) GetPokemonList(location string) (detailedResponse, error) {
+    url := baseurl + "/location-area/" + location
+
+    data, exist := cache.Get(url)
+    if !exist {
+        req, err := http.NewRequest("GET", url, nil)
+
+        if err != nil {
+            fmt.Println(err)
+            return detailedResponse{}, err
+        }
+
+        res, err := c.client.Do(req)
+        if err != nil {
+            return detailedResponse{}, err
+        }
+
+        data, err = io.ReadAll(res.Body)
+        defer res.Body.Close()
+
+        if err != nil {
+            return detailedResponse{}, err
+        }
+        cache.Add(url, data)
+    }
+
+
+    var detail detailedResponse = detailedResponse{}
+    if err := json.Unmarshal(data, &detail); err != nil {
+        return detail, err
+    }
+
+    return detail, nil
+}
+
+func (c *Client) GetPokemon(location string) (Pokemon, error) {
+    url := baseurl + "/pokemon/" + location
+
+    data, exist := cache.Get(url)
+    if !exist {
+        req, err := http.NewRequest("GET", url, nil)
+
+        if err != nil {
+            fmt.Println(err)
+            return Pokemon{}, err
+        }
+
+        res, err := c.client.Do(req)
+        if err != nil {
+            return Pokemon{}, err
+        }
+
+        data, err = io.ReadAll(res.Body)
+        defer res.Body.Close()
+
+        if err != nil {
+            return Pokemon{}, err
+        }
+        cache.Add(url, data)
+    }
+
+
+    var poke Pokemon = Pokemon{}
+    if err := json.Unmarshal(data, &poke); err != nil {
+        return poke, err
+    }
+
+    return poke, nil
 }
