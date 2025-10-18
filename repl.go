@@ -111,6 +111,39 @@ func commandCatch(c *config, args ...string) error {
 }
 
 
+func commandInspect(c *config, args ...string) error {
+    if len(args) != 1 {
+        return errors.New("You need to provide exactly one argument")
+    }
+    name := args[0]
+
+    poke, exist := c.caughtPokemon[name]
+    if !exist {
+        return errors.New("you have not caught that pokemon")
+    }
+    fmt.Println("Stats:")
+    fmt.Println("Name:", poke.Name)
+    fmt.Println("Height:",poke.Height)
+    fmt.Println("Weight:",poke.Weight)
+
+    for _, s := range poke.Stats {
+        fmt.Printf(" - %s: %d\n", s.Stat.Name, s.BaseStat)
+    }
+    fmt.Println("Types: ")
+    for _, s := range poke.Types {
+        fmt.Printf(" - %s\n", s.Type.Name)
+    }
+    return nil
+}
+
+func commandPokedex(c *config, args ...string) error {
+    fmt.Println("Your Pokedex:")
+    for k := range c.caughtPokemon {
+        fmt.Println(" -", k)
+    }
+    return nil
+}
+
 func cleanInput(text string) []string {
     out := strings.ToLower(text)
     result := strings.Fields(out)
@@ -148,6 +181,16 @@ func getCommands() map[string]command{
             name: "catch",
             description: "Attempt to get a Pokemon",
             callback: commandCatch,
+        },
+        "inspect": {
+            name: "inspect",
+            description: "Get info about catched Pokemon",
+            callback: commandInspect,
+        },
+        "pokedex": {
+            name: "pokedex",
+            description: "List of all caught Pokemon",
+            callback: commandPokedex,
         },
     }
 }
